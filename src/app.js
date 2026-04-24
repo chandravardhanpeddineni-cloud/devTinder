@@ -2,37 +2,28 @@ const express = require('express');
 
 const app = express();   //app is an instance of express js application
 
-app.use('/user', (req, res, next) => {
-    console.log("Request received at /user endpoint");
-    next();  //call the next middleware function in the stack
-});
-app.patch('/user', (req, res) => {
-   console.log("Updating user in database...");
-   res.send({
-    message: "User updated successfully in database"
-   })
-});
-app.get('/user', (req, res) => {
-        res.send({
-            name: "John Doe",
-            age: 30,
-            email: "john@gmail.com"
-        });
-});
-app.post('/user', (req, res) => {  
-    console.log("Creating user in database...");
-    res.send({
-        message: "User created successfully in database"
-    });
+//Handle auth middleware for admin routes
+const { adminAuthMiddleware, userAuthMiddleWare } = require('./Middlewares/auth');
+
+// Apply the admin authentication middleware to all routes starting with /admin
+app.use('/admin', adminAuthMiddleware);
+
+app.get('/admin/dashboard', (req, res) => {
+    //we need to check if the user is authenticated and has the role of admin
+    res.send("Welcome to the admin dashboard");
 });
 
+app.get('/admin/delete-user', (req, res) => {
+    res.send("User deleted successfully");
+}) 
 
-app.delete ('/user', (req, res) => {
-    console.log("Deleting user from database...");
-    res.send({
-        message: "User deleted successfully from database"
-    });
-}); 
+
+// Apply the user authentication middleware to all routes starting with /user
+app.use('/user', userAuthMiddleWare);
+
+app.get('/user',userAuthMiddleWare, (req, res) => {
+    res.send("Welcome to the user page");
+})
 
 
 app.listen(3000,() => {
