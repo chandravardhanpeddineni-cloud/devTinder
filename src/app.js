@@ -1,31 +1,40 @@
 const express = require('express');
 
+const connectDB = require('./config/database');
+const User = require('./models/user');
 const app = express();   //app is an instance of express js application
 
-//Handle auth middleware for admin routes
-const { adminAuthMiddleware, userAuthMiddleWare } = require('./Middlewares/auth');
 
-// Apply the admin authentication middleware to all routes starting with /admin
-app.use('/admin', adminAuthMiddleware);
 
-app.get('/admin/dashboard', (req, res) => {
-    //we need to check if the user is authenticated and has the role of admin
-    res.send("Welcome to the admin dashboard");
+app.post('/signup', async (req, res) => {
+    const userObject = {
+        address: "Hyderabad, Telangana, India",
+        lastName: "Peddineni",
+        emailID: "akashay@example.com",
+        password: "password12",
+        age: 32,
+        gender: "male"
+    }
+    //creating a new instance of the user model and passing the userObject to it
+    const user = new User(userObject);
+
+    try {
+         await user.save();
+        res.status(201).send(savedUser);
+   
+    } catch (err) {
+        res.status(500).send("Error saving user: " + err);
+    }
 });
 
-app.get('/admin/delete-user', (req, res) => {
-    res.send("User deleted successfully");
-}) 
 
 
-// Apply the user authentication middleware to all routes starting with /user
-app.use('/user', userAuthMiddleWare);
+connectDB().then(() => {
+    console.log("Connected to the database successfully");
 
-app.get('/user',userAuthMiddleWare, (req, res) => {
-    res.send("Welcome to the user page");
-})
-
-
-app.listen(3000,() => {
+    app.listen(3000,() => {
     console.log("Server is running on port 3000");
 }); 
+}).catch(err => {
+    console.error("Error connecting to the database: ", err);
+});
