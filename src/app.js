@@ -11,6 +11,7 @@ app.post('/signup', async (req, res) => {
     const user = new User(req.body);
 
     try {
+        
          await user.save(); 
         res.status(201).send("User created successfully");
    
@@ -73,10 +74,25 @@ app.delete('/user', async(req, res) => {
 })
 
 //Update user API - PATCh /user - to update a user's details
-app.patch('/user', async(req, res) => {
-    const userId = req.body.userId;
+app.patch('/user/:userId', async(req, res) => {
+    const userId = req.params?.userId;
     const data = req.body;
+
     try {
+        const ALLOWED_UPDATES = [
+            "userId", "profilePicture", "about", "gender", "age", "skills", "password"
+        ];
+
+        const isUpdateAllowed = Object.keys(data).every(k => ALLOWED_UPDATES.includes(k));
+        
+        if(!isUpdateAllowed) {
+            throw new Error("Update is not Allowed");
+        }
+
+        if(data?.skills.length > 10) {
+            throw new Error("Skills can't be more than 10");
+        }
+
         const updateUser = await User.findByIdAndUpdate(userId, data, 
             {
                 returnDocument: "After", 
@@ -85,6 +101,7 @@ app.patch('/user', async(req, res) => {
         if(!updateUser) {
             return res.status(404).send("User not found");
         }
+
         res.status(200).send("User updated successfully");
     }
     catch(err) {
