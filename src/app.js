@@ -3,23 +3,85 @@ const express = require('express');
 const connectDB = require('./config/database');
 const User = require('./models/user');
 const app = express();   //app is an instance of express js application
-
+const { validateSignUpDate } = require('./utils/validation');
+const bcrypt = require('bcrypt');
+const validator = require('validator');
 app.use(express.json());  //middleware to parse incoming JSON data in the request body
 
-app.post('/signup', async (req, res) => {
 
-    const user = new User(req.body);
+
+
+app.post('/signup', async (req, res) => {
+    
+    //encrypt the password and store the data
 
     try {
+        //Validation of data is required
+        validateSignUpDate(req);
+
+        const {firstName, lastName, emailId, password, age, gender, profilePicture, bio, skills } = req.body;
+
+        //encrypt the password and store the data
+
+        //below getSalt method we use generate salt string when we use hash it generated automatically
+
+        // const salt = bcrypt.genSalt(10, function(err, salt) {
+        //     console.log(salt);
+        // })
+
+        const passwordHash = await bcrypt.hash(password, 10);
         
+        const user = new User({
+            firstName, 
+            lastName, 
+            emailId, 
+            password: passwordHash, 
+            age, gender, 
+            profilePicture, 
+            bio, skills
+        });
+
          await user.save(); 
         res.status(201).send("User created successfully");
    
     } catch (err) {
-        res.status(500).send("Error saving user: " + err);
+        res.status(500).send("Error: " + err.message);
     }
 });
 
+
+app.post('/login', async (req, res) => {
+
+    try{
+        const { emailId, password } = req.body;
+
+        if(!validator.isEmail(emailId)) {
+            throw new Error("Please enter the valid Email Id");
+        }
+        
+        const user = await User.findOne({emailId: emailId});
+        
+        // console.log("user:  "+ user);
+        if(!user) {
+            throw new Error("Invalid Credentials");
+        }
+        
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        // console.log("password" + isPasswordValid);
+        
+        if(isPasswordValid) {
+            res.send("User Login Successfull");
+        }
+        else{
+            throw new Error("Invalid Credentials");
+        }
+    }
+    catch(err) {
+        res.status(500).send("Error: " + err.message);
+    }
+
+});
 
 
 //get user details by email
