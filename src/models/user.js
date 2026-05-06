@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
         required: true,
+        index: true,
         minlength: 3,
         maxlength: 50
     },
@@ -43,11 +44,15 @@ const userSchema = new mongoose.Schema({
     gender: {
         type: String,
         required: true,
-        validate(value) {
-            if(!["male", "female", "other"].includes(value.toLowerCase())) {
-                throw new Error(" Invalid gender value. Allowed values are male, female, or other.");
-            }
-         }
+        enum: {
+            values: ["male", "female", "other"],
+            message: `{VALUES} is not a valid gender`
+        }
+        // validate(value) {
+        //     if(!["male", "female", "other"].includes(value.toLowerCase())) {
+        //         throw new Error(" Invalid gender value. Allowed values are male, female, or other.");
+        //     }
+        //  }
     },
     profilePicture: {
         type: String,
@@ -68,6 +73,9 @@ const userSchema = new mongoose.Schema({
 }, {
     timestamps: true,
 });
+
+
+userSchema.index({firstName: 1, lastName: 1});   // 
 
 userSchema.methods.validatePassword = async function(passwordInputByUser) {
     const user = this;  
