@@ -7,16 +7,16 @@ const cookieParser = require('cookie-parser');
 const { authRouter } = require('./routes/auth');
 const { profileRouter } = require('./routes/profile');
 const { requestRouter } = require('./routes/request')
-
+const  { userRouter } = require('./routes/user');
 
 app.use(cookieParser());
 app.use(express.json());  //middleware to parse incoming JSON data in the request body
 
 
-app.use('/user', authRouter);
+app.use('/', authRouter);
 app.use('/profile', profileRouter);
 app.use('/request', requestRouter);
-
+app.use('/user', userRouter);
 
 connectDB().then(() => {
     console.log("Connected to the database successfully");

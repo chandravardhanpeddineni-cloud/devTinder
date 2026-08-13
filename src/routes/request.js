@@ -54,7 +54,39 @@ requestRouter.post("/send/:status/:toUserId", userAuthMiddleWare ,async (req, re
    catch(err) {
         res.status(400).send("Error: "+ err.message);
    }
-})
+});
+
+requestRouter.post('/review/:status/:requestId', userAuthMiddleWare, async (req, res) => {
+
+    try{
+        const loggedInUser = req.user;
+        const { status, requestId } = req.params;
+        const allowedStatus = ["accepted", "rejected"];
+
+        if(!allowedStatus.includes(status)) {
+            return res.send(400).json({message: "status is not allowed"});
+        }
+    
+        const connectionReq = await ConnectionRequestModel.findOne({
+            _id: requestId,
+            toUserId: loggedInUser._id,
+            status: "interested"
+        });
+
+        if(!connectionReq) {
+            return res.status(404).json({message: "connection Request Not found"});
+        }
+
+        connectionReq.status = status;
+        
+        const data = await connectionReq.save();
+
+        res.json({message: "connection request " + status , data});
+
+    }catch(err) {
+        res.status(400).send("Error" + err.message); 
+    }
+});
 
 
 
