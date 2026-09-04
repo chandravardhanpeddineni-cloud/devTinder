@@ -48,10 +48,9 @@ profileRouter.patch('/password', userAuthMiddleWare, async (req, res) => {
           if(!validator.isStrongPassword(updatedPassword)) {
                throw new Error("Please enter strong password");
           }
-          
-          const updatedPasswordHash = await bcrypt.hash(updatedPassword, 10);
-          loggedUser.password = updatedPasswordHash
 
+          loggedUser.password = updatedPassword;
+          loggedUser.confirmPassword = updatedConfirmPassword;
           await loggedUser.save();
 
           res.send({
@@ -59,7 +58,7 @@ profileRouter.patch('/password', userAuthMiddleWare, async (req, res) => {
           });
           }
           catch(err) {
-               res.send(400).send("Error: " + err.message);
+               res.status(400).send("Error: " + err.message);
           }
 
 })

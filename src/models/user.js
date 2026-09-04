@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const validator = require('validator')
+
 const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
@@ -35,6 +36,16 @@ const userSchema = new mongoose.Schema({
             if(!validator.isStrongPassword(value)) {
                 throw new Error("requirement must match { minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1, minSymbols: 1}")
             }
+        }
+    },
+    confirmPassword: {
+        type: String,
+        required: [true, "Confirm Password"],
+        validate: {
+            validator: function(el) {
+                return el === this.password;
+            },
+            message: "Password should be same",
         }
     },
     age: {
@@ -77,11 +88,19 @@ const userSchema = new mongoose.Schema({
 
 userSchema.index({firstName: 1, lastName: 1});   // 
 
+userSchema.pre("save", async function(next) {
+    if(!this.isModified("password")) return next();
+
+    this.password = await bcrypt.hash(this.password, 10);
+    this.confirmPassword = undefined;
+    next();
+})
+
 userSchema.methods.validatePassword = async function(passwordInputByUser) {
     const user = this;  
     const passwordHash = user.password;
 
-    const isPasswordValid = bcrypt.compare(passwordInputByUser, passwordHash);
+    const isPasswordValid = await bcrypt.compare(passwordInputByUser, passwordHash);
 
     return isPasswordValid;
 
@@ -91,9 +110,11 @@ userSchema.methods.getJWT = async function() {
 
     const user = this;
 
-    const token = jwt.sign({_id : user._id}, "DEV@Tinder@1333",{
-        expiresIn: "7d"
+    const token = jwt.sign({_id : user._id},
+         process.env.JWT_SECRET,{
+        expiresIn: process.env.JWT_EXPIRE
     });
+
     return token;
 }
 

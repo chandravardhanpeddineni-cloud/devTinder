@@ -64,7 +64,7 @@ requestRouter.post('/review/:status/:requestId', userAuthMiddleWare, async (req,
         const allowedStatus = ["accepted", "rejected"];
 
         if(!allowedStatus.includes(status)) {
-            return res.send(400).json({message: "status is not allowed"});
+            return res.status(400).json({message: "status is not allowed"});
         }
     
         const connectionReq = await ConnectionRequestModel.findOne({

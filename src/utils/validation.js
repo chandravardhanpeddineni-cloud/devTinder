@@ -2,7 +2,7 @@ const validator = require('validator');
 
 const validateSignUpDate = (req) => {
 
-    const {firstName, lastName, emailId, password} = req.body;
+    const {firstName, lastName, emailId, password, confirmPassword} = req.body;
 
     if(!firstName || !lastName) {
         throw new Error("Enter the first And Last Name");
@@ -12,6 +12,8 @@ const validateSignUpDate = (req) => {
     }
     else if(!validator.isStrongPassword(password)) {
         throw new Error("Please enter strong password");
+    }else if(password != confirmPassword) {
+        throw new Error("Password Should be match");
     }
 
 }

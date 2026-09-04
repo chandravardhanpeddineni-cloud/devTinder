@@ -13,7 +13,7 @@ authRouter.post('/signup', async (req, res) => {
         //Validation of data is required
         validateSignUpDate(req);
 
-        const {firstName, lastName, emailId, password, age, gender, profilePicture, bio, skills } = req.body;
+        const {firstName, lastName, emailId, password, confirmPassword, age, gender, profilePicture, bio, skills } = req.body;
 
         //encrypt the password and store the data
 
@@ -23,13 +23,14 @@ authRouter.post('/signup', async (req, res) => {
         //     console.log(salt);
         // })
 
-        const passwordHash = await bcrypt.hash(password, 10);
+        // const passwordHash = await bcrypt.hash(password, 10);
         
         const user = new User({
             firstName, 
             lastName, 
             emailId, 
-            password: passwordHash, 
+            password,
+            confirmPassword,
             age, gender, 
             profilePicture, 
             bio, skills
@@ -47,6 +48,8 @@ authRouter.post('/login', async (req, res) => {
 
     try{
         const { emailId, password } = req.body;
+        // console.log("emailId: " + emailId);
+        // console.log("password: " + password);
 
         if(!validator.isEmail(emailId)) {
             throw new Error("Please enter the valid Email Id");
@@ -76,6 +79,9 @@ authRouter.post('/login', async (req, res) => {
         }
     }
     catch(err) {
+        console.log("Status:", err.response?.status);
+  console.log("Data:", err.response?.data);
+  console.log("Message:", err.message);
         res.status(500).send("Error: " + err.message);
     }
 
