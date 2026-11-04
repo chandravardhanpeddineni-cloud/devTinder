@@ -38,16 +38,6 @@ const userSchema = new mongoose.Schema({
             }
         }
     },
-    confirmPassword: {
-        type: String,
-        required: [true, "Confirm Password"],
-        validate: {
-            validator: function(el) {
-                return el === this.password;
-            },
-            message: "Password should be same",
-        }
-    },
     age: {
         type: Number,
         min: 18
@@ -56,7 +46,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         enum: {
-            values: ["male", "female", "other"],
+            values: ["male", "female", "others"],
             message: `{VALUES} is not a valid gender`
         }
         // validate(value) {
@@ -64,6 +54,13 @@ const userSchema = new mongoose.Schema({
         //         throw new Error(" Invalid gender value. Allowed values are male, female, or other.");
         //     }
         //  }
+    },
+    isPremium: {
+        type: Boolean,
+        default: false,
+    },
+    membershipType: {
+        type: String,
     },
     profilePicture: {
         type: String,
@@ -92,7 +89,6 @@ userSchema.pre("save", async function(next) {
     if(!this.isModified("password")) return next();
 
     this.password = await bcrypt.hash(this.password, 10);
-    this.confirmPassword = undefined;
     next();
 })
 

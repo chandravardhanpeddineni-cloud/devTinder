@@ -4,6 +4,7 @@ const { userAuthMiddleWare } = require('../Middlewares/auth')
 const requestRouter = express.Router();
 const ConnectionRequestModel = require('../models/connectionRequest');
 const User = require('../models/user');
+const sendEmail = require('../utils/sendEmail')
 
 requestRouter.post("/send/:status/:toUserId", userAuthMiddleWare ,async (req, res) => {
     
@@ -12,8 +13,8 @@ requestRouter.post("/send/:status/:toUserId", userAuthMiddleWare ,async (req, re
          const toUserId = req.params.toUserId;
          const status = req.params.status;
 
-        const allowedStatus = ["ignored", "interested"];
-
+        const allowedStatus = ["ignore", "interested"];
+ 
 
         
         if(!allowedStatus.includes(status)) {
@@ -45,6 +46,9 @@ requestRouter.post("/send/:status/:toUserId", userAuthMiddleWare ,async (req, re
          });
 
          const data = await connectionReq.save();
+        
+        // const res = await sendEmail.run( "A new Friend request from " + req.user.firstName, req.user.firstName + " is "+ status +" in "+ toUserExist.firstName);
+        // console.log(res);
 
          res.json({
             message: req.user.firstName + " is "+ status +" in "+ toUserExist.firstName,
@@ -52,7 +56,7 @@ requestRouter.post("/send/:status/:toUserId", userAuthMiddleWare ,async (req, re
          }); 
    }
    catch(err) {
-        res.status(400).send("Error: "+ err.message);
+        res.status(400).send("Error: "+ err);
    }
 });
 

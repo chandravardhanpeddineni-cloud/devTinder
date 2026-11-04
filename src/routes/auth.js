@@ -13,7 +13,7 @@ authRouter.post('/signup', async (req, res) => {
         //Validation of data is required
         validateSignUpDate(req);
 
-        const {firstName, lastName, emailId, password, confirmPassword, age, gender, profilePicture, bio, skills } = req.body;
+        const {firstName, lastName, emailId, password, age, gender, profilePicture, bio, skills } = req.body;
 
         //encrypt the password and store the data
 
@@ -30,14 +30,24 @@ authRouter.post('/signup', async (req, res) => {
             lastName, 
             emailId, 
             password,
-            confirmPassword,
             age, gender, 
             profilePicture, 
             bio, skills
         });
 
-         await user.save(); 
-        res.status(201).send("User created successfully");
+         const savedData = await user.save(); 
+
+         const token = await savedData.getJWT();
+
+        
+            res.cookie("token", token, {
+            expires: new Date(Date.now() + 8 * 3600000),
+            httpOnly: true,
+            sameSite: "lax",
+            secure: false, // localhost uses HTTP
+            });
+
+        res.status(201).send({message: "User created successfully", data: savedData});
    
     } catch (err) {
         res.status(500).send("Error: " + err.message);
@@ -48,8 +58,7 @@ authRouter.post('/login', async (req, res) => {
 
     try{
         const { emailId, password } = req.body;
-        // console.log("emailId: " + emailId);
-        // console.log("password: " + password);
+
 
         if(!validator.isEmail(emailId)) {
             throw new Error("Please enter the valid Email Id");
@@ -70,13 +79,12 @@ authRouter.post('/login', async (req, res) => {
 
         
             res.cookie("token", token, {
-            expires: new Date(Date.now() + 8 * 3600000), // 8 hours
+            expires: new Date(Date.now() + 8 * 3600000),
             httpOnly: true,
             sameSite: "lax",
             secure: false, // localhost uses HTTP
             });
 
-            const { firstName } = user;
             res.send(user);
         }
         else{
@@ -84,9 +92,7 @@ authRouter.post('/login', async (req, res) => {
         }
     }
     catch(err) {
-        console.log("Status:", err.response?.status);
-  console.log("Data:", err.response?.data);
-  console.log("Message:", err.message);
+    
         res.status(500).send("Error: " + err.message);
     }
 

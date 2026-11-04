@@ -15,7 +15,7 @@ userRouter.get('/requests/received', userAuthMiddleWare,async (req, res) => {
         // }).populate("fromUserId", ["firstName", "lastName"]); 
 
         if(connectionReqs.length == 0) {
-            res.status(404).json({message: "Connection requests not found"});
+            return res.status(404).json({message: "Connection requests not found"});
         }
         res.json({message: "Data fetch successfully", data: connectionReqs});
     }
@@ -45,7 +45,7 @@ userRouter.get("/connections", userAuthMiddleWare, async(req, res) => {
         return row.fromUserId;
     });
 
-    res.json({message: "Data fetched Successfully", data});
+    res.json(data);
     
 });
 

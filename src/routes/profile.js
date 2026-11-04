@@ -50,7 +50,6 @@ profileRouter.patch('/password', userAuthMiddleWare, async (req, res) => {
           }
 
           loggedUser.password = updatedPassword;
-          loggedUser.confirmPassword = updatedConfirmPassword;
           await loggedUser.save();
 
           res.send({
