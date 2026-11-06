@@ -15,7 +15,10 @@ userRouter.get('/requests/received', userAuthMiddleWare,async (req, res) => {
         // }).populate("fromUserId", ["firstName", "lastName"]); 
 
         if(connectionReqs.length == 0) {
-            return res.status(404).json({message: "Connection requests not found"});
+            return res.status(200).json({
+                message: "You have no connection requests yet.",
+                data: []
+            });
         }
         res.json({message: "Data fetch successfully", data: connectionReqs});
     }
